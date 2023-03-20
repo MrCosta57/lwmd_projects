@@ -8,12 +8,13 @@
 
 using namespace std;
 
+template <typename T>
 class Graph {
     private:
         long numNodes;
         long numEdges;
         string type;
-        map<long, Set<long>> adjList;
+        map<T, Set<T>> adjList;
         
     public:
     Graph(string type="undirected") {
@@ -22,7 +23,7 @@ class Graph {
         numNodes=0;
     }
 
-    Graph(const vector<pair<long, long>> &edge_list, string type) {
+    Graph(const vector<pair<T, T>> &edge_list, string type) {
         this->type=type;
         numEdges=0;
         numNodes=0;
@@ -33,27 +34,42 @@ class Graph {
     }
 
 
-    map<long, Set<long>> get_adjList(){
+    map<T, Set<T>> get_adjList(){
         return adjList;
     }
 
 
-    void addEdge(long u, long v) {
+    void addEdge(T u, T v) {
 
         if (type=="directed"){
+            
+            #pragma omp critical (critical_general)
+            {
             auto &map_value=adjList[u];
             bool test=map_value.insert(v);
             if (test){
                 numEdges++;
             }
-        }else{
-            auto &map_value_u=adjList[u];
-            auto &map_value_v=adjList[v];
+            }
 
-            bool test1=map_value_u.insert(v);
-            bool test2=map_value_v.insert(u);
+        }else{
+            
+            bool test1;
+            bool test2;
+            #pragma omp critical (critical_u)
+            {
+            auto &map_value_u=adjList[u];
+            test1=map_value_u.insert(v);
+            }
+
+            #pragma omp critical (critical_v)
+            {
+            auto &map_value_v=adjList[v];
+            test2=map_value_v.insert(u);
+            }
 
             if (test1 || test2){
+                #pragma omp atomic
                 numEdges++;
             }
             //cout<<"Inserted "<<u<<" and "<<v<<endl;
@@ -77,10 +93,10 @@ class Graph {
         cout<<endl;
     }
 
-    long get_numNodes(){
+    T get_numNodes(){
         return numNodes;
     }
-    long get_numEdges(){
+    T get_numEdges(){
         return numEdges;
     }
 

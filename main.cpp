@@ -19,13 +19,13 @@ using namespace std;
 /* GLOBAL VARIABLES */
 string prefix="dataset/";
 string fileName="roadNet-CA.txt";
-int allow_dynamics=0;
-bool enable_parallelism=false;
+int allow_dynamics_resources=0;
+bool enable_parallelism=true;
 
 
 /* PROCEDURES */
-Graph rank_by_degree(Graph &undirected_graph, bool enable_parallelism, int num_threads){
-    Graph result_graph("directed");
+Graph<int> rank_by_degree(Graph<int> &undirected_graph, bool enable_parallelism, int num_threads){
+    Graph<int> result_graph("directed");
     auto adj_list=undirected_graph.get_adjList();
 
     //For each node v
@@ -35,22 +35,15 @@ Graph rank_by_degree(Graph &undirected_graph, bool enable_parallelism, int num_t
         //For each u contains in N(v)
         #pragma omp for schedule(dynamic)
         for (auto it_set=it_map->second.begin(); it_set!=it_map->second.end(); ++it_set){
-            long neigh_id=(*it_set);
-            long v_size=adj_list[it_map->first].size();
-            long u_size=adj_list[neigh_id].size();
+            auto neigh_id=(*it_set);
+            int v_size=adj_list[it_map->first].size();
+            int u_size=adj_list[neigh_id].size();
 
-            if (v_size<u_size){
-                #pragma omp critical
-                {result_graph.addEdge(it_map->first, neigh_id);}
+            if (v_size<u_size || (v_size==u_size && it_map->first<neigh_id)){
+                result_graph.addEdge(it_map->first, neigh_id);
 
-            }else if(v_size==u_size){
-                if(it_map->first<neigh_id){
-                    #pragma omp critical
-                    {result_graph.addEdge(it_map->first, neigh_id);}
-                }else{
-                    #pragma omp critical
-                    {result_graph.addEdge(neigh_id, it_map->first);}
-                }
+            }else{
+                result_graph.addEdge(neigh_id, it_map->first);
             }
         }
     }
@@ -58,28 +51,48 @@ Graph rank_by_degree(Graph &undirected_graph, bool enable_parallelism, int num_t
 }
 
 
-long triangle_counting(Graph &dir_graph, bool enable_parallelism, int num_threads){
-    long count=0;
+int count_intersection(Set<int>::iterator first1, Set<int>::iterator last1, 
+                        Set<int>::iterator first2, Set<int>::iterator last2){
+    int count=0;
+    while (first1 != last1 && first2 != last2){
+        if (*first1 < *first2)
+            ++first1;
+        else if (*first2 < *first1)
+            ++first2;
+        else{
+            count++;
+            first1++;
+            first2++;
+        }
+    }
+    return count;
+}
+
+
+int triangle_counting(Graph<int> &dir_graph, bool enable_parallelism, int num_threads){
+    int count=0;
 
     auto adj_list=dir_graph.get_adjList();
+
     //For each node v
     #pragma omp parallel if(enable_parallelism) num_threads(num_threads)
     for (auto it_map = adj_list.begin(); it_map!= adj_list.end(); ++it_map) {
-
+        
         //For each u contains in N(v)
-        #pragma omp for schedule(dynamic) reduction(+: count)
+        #pragma omp for schedule(dynamic) reduction (+:count)
         for (auto it_set=it_map->second.begin(); it_set!=it_map->second.end(); ++it_set){
-            set<long> result;
-            long neigh_id=(*it_set);
-            set_intersection(it_map->second.begin(), it_map->second.end(), adj_list[neigh_id].begin(), adj_list[neigh_id].end(), inserter(result, result.begin()));
-            count=count+result.size();
+            
+            int neigh_id=(*it_set);
+            int size=count_intersection(it_map->second.begin(), it_map->second.end(), adj_list[neigh_id].begin(), adj_list[neigh_id].end());
+        
+            count=count+size;
         }
     }
 
     return count;
 }
 
-vector<pair<long, long>> parse_file(string path){
+vector<pair<int, int>> parse_file(string path){
     // Open the file for reading
     ifstream inputFile(path);
 
@@ -88,9 +101,9 @@ vector<pair<long, long>> parse_file(string path){
         throw ifstream::failure("Failed to open file");
     }
 
-    vector<pair<long, long>> edges;
-    long node1;
-    long node2;
+    vector<pair<int, int>> edges;
+    int node1;
+    int node2;
 
     while (inputFile >> node1 >> node2) {
         edges.push_back(make_pair(node1, node2));
@@ -104,7 +117,7 @@ vector<pair<long, long>> parse_file(string path){
 
 
 int main() {
-    omp_set_dynamic(allow_dynamics);
+    omp_set_dynamic(allow_dynamics_resources);
     int num_threads=4;
 
     cout<<"**Graph Triangle's Counter**"<<endl;
@@ -117,12 +130,12 @@ int main() {
     auto edgle_list=parse_file(prefix+fileName);
     cout<<"\tDone!"<<endl;
 
-    Graph g(edgle_list, "undirected");
+    Graph<int> g(edgle_list, "undirected");
     cout<<"Nodes: "<<g.get_numNodes()<<" Edges: "<<g.get_numEdges()<<", "<<"Density: "<<g.getDensity()<<endl<<endl;
 
     cout<<"Executing Rank by degree function..."<<endl;
     auto start=chrono::high_resolution_clock::now();
-    Graph dir_g=rank_by_degree(g, enable_parallelism, num_threads);
+    Graph<int> dir_g=rank_by_degree(g, enable_parallelism, num_threads);
     auto end=chrono::high_resolution_clock::now();
     auto elapsed=chrono::duration_cast<chrono::duration<double>>(end - start);
     cout<<"Done in "<< elapsed.count() << " secs."<<endl<<endl;
