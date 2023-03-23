@@ -43,13 +43,15 @@ class Graph {
 
         if (type=="directed"){
             
+            bool test;
             #pragma omp critical (critical_general)
             {
             auto &map_value=adjList[u];
-            bool test=map_value.insert(v);
-            if (test){
-                numEdges++;
+            test=map_value.insert(v);
             }
+            if (test){
+                #pragma omp atomic
+                numEdges++;
             }
 
         }else{

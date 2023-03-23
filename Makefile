@@ -6,7 +6,7 @@ classes=
 
 #COMPILE
 compile:
-	g++ -std=c++11 $(inputMain) $(classes) -o $(outputMain) -fopenmp -Wall -Wextra --pedantic -O3 -fsanitize=address -fsanitize=undefined
+	g++ -std=c++17 $(inputMain) $(classes) -o $(outputMain) -fopenmp -Wall -Wextra --pedantic -O3 -fsanitize=address -fsanitize=undefined
 
 #CLEAN
 clean:

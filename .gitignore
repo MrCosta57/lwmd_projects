@@ -33,3 +33,5 @@
 
 .vscode
 dataset/
+*.csv
+perf
