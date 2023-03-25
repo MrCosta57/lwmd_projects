@@ -11,10 +11,10 @@ using namespace std;
 template <typename T>
 class Graph {
     private:
-        long numNodes;
-        long numEdges;
-        string type;
-        map<T, Set<T>> adjList;
+        long numNodes; //Number of nodes in graph
+        long numEdges; //Number of edges in graph
+        string type; //Graph type {directed, undirected}
+        map<T, Set<T>> adjList; //Internal representation
         
     public:
     Graph(string type="undirected") {
@@ -23,6 +23,7 @@ class Graph {
         numNodes=0;
     }
 
+    //Constructor by a list of nodes and a graph type
     Graph(const vector<pair<T, T>> &edge_list, string type) {
         this->type=type;
         numEdges=0;
@@ -38,9 +39,10 @@ class Graph {
         return adjList;
     }
 
-
+    
+    /*Add a graph edge based on graph type
+    Note: the method is thread safe*/
     void addEdge(T u, T v) {
-
         if (type=="directed"){
             
             bool test;
@@ -74,14 +76,12 @@ class Graph {
                 #pragma omp atomic
                 numEdges++;
             }
-            //cout<<"Inserted "<<u<<" and "<<v<<endl;
-            //printGraph();
         }
 
         numNodes=adjList.size();
     }
 
-
+    
     void printGraph() {
         cout<<"Graph type: "<<type<<endl;
 
@@ -102,6 +102,7 @@ class Graph {
         return numEdges;
     }
 
+    //Return the graph density based on graph type
     double getDensity(){
         double coeff=(type=="directed")? 1.0: 2.0;
         return (coeff*numEdges)/(numNodes*(numNodes-1));

@@ -1,0 +1,23 @@
+# started on Fri Mar 24 17:28:33 2023
+
+
+ Performance counter stats for './output.out' (3 runs):
+
+        3033085.92 msec task-clock:u              #    3.676 CPUs utilized            ( +-  1.11% )
+                 0      context-switches:u        #    0.000 /sec                   
+                 0      cpu-migrations:u          #    0.000 /sec                   
+            589911      page-faults:u             #  191.491 /sec                     ( +-  0.47% )
+     8344952138910      cycles:u                  #    2.709 GHz                      ( +-  0.32% )  (75.00%)
+      387785922437      stalled-cycles-frontend:u #    4.62% frontend cycles idle     ( +-  1.77% )  (75.01%)
+     2337855056351      stalled-cycles-backend:u  #   27.85% backend cycles idle      ( +-  0.65% )  (75.00%)
+    15919349809149      instructions:u            #    1.90  insn per cycle         
+                                                  #    0.15  stalled cycles per insn  ( +-  0.04% )  (75.00%)
+     4676321411765      branches:u                #    1.518 G/sec                    ( +-  0.02% )  (75.00%)
+       38844612834      branch-misses:u           #    0.83% of all branches          ( +-  0.01% )  (75.00%)
+     3849177111648      L1-dcache-loads:u         #    1.249 G/sec                    ( +-  0.03% )  (75.00%)
+       46859799818      L1-dcache-load-misses:u   #    1.22% of all L1-dcache accesses  ( +-  0.29% )  (75.00%)
+   <not supported>      LLC-loads:u                                                 
+   <not supported>      LLC-load-misses:u                                           
+
+            825.13 +- 20.17 seconds time elapsed  ( +-  2.44% )
+
