@@ -16,8 +16,8 @@ using namespace std;
 
 /* GLOBAL VARIABLES */
 
-string data_path="dataset/";
-string filename="custom-dense"; //com-amazon-ungraph , as-skitter, custom-dense
+string data_path="datasets/";
+string filename="as-skitter"; //facebook-combined , as-skitter, custom-dense
 string extension=".txt";
 string output_path="results/";
 int allow_dynamics_resources=0;
@@ -38,7 +38,7 @@ Graph<long> rank_by_degree(Graph<long> &undirected_graph, int num_threads){
     for (auto it_map = adj_list.begin(); it_map!= adj_list.end(); ++it_map) {
         
         //For each u in Neigh(v)
-        #pragma omp for schedule(static)
+        #pragma omp for schedule(dynamic)
         for (auto it_set=it_map->second.begin(); it_set!=it_map->second.end(); ++it_set){
             auto neigh_id=(*it_set); //Id of vertex u
             long v_size=adj_list[it_map->first].size(); //Degree of v
@@ -61,7 +61,7 @@ Graph<long> rank_by_degree(Graph<long> &undirected_graph, int num_threads){
 }
 
 
-//Return the cardinality of the intersection between two sets
+//Return the cardinality of the intersection between two sets (the intersection are not stored in memory during the operation)
 long count_intersection(Set<long>::iterator first1, Set<long>::iterator last1, 
                         Set<long>::iterator first2, Set<long>::iterator last2){
     long count=0;
@@ -92,7 +92,7 @@ long triangle_counting(Graph<long> &dir_graph, int num_threads){
     for (auto it_map = adj_list.begin(); it_map!= adj_list.end(); ++it_map) {
         
         //For each u in Neigh(v)
-        #pragma omp for schedule(static) reduction (+:count)
+        #pragma omp for schedule(dynamic) reduction (+:count)
         for (auto it_set=it_map->second.begin(); it_set!=it_map->second.end(); ++it_set){
             
             long neigh_id=(*it_set);
@@ -149,7 +149,7 @@ int main() {
     cout<<"\t-Dynamic scheduling allowed: "<<omp_get_dynamic()<<endl<<endl;
 
     stringstream ss;
-    if (!(filesystem::exists(output_path+filename+extension))){ //csv header
+    if (!(filesystem::exists(output_path+filename+"_results.csv"))){ //csv header
         ss << "n_nodes,n_edges,density,num_threads,rank_time,triangle_time\n";
     }
 
