@@ -1,1 +1,6 @@
-# mips_for_dense-sparse_retrieval
+# Requirements:
+- pandas
+- nltk (in particular run also `nltk.download(['words', 'stopwords', 'punkt'])`)
+- matplotlib
+- sentence-transformers
+- scikit-learn
