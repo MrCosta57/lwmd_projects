@@ -19,7 +19,7 @@ class StemmedTfidfVectorizer(TfidfVectorizer):
 
 def compute_sparse_repr(corpus: pd.DataFrame):
     """
-    TF-IDF. Result vectors are normalized
+    TF-IDF. Return vectors normalized, vocabulary of terms and idf weights
     """
     #Extract only the word and the numbers, made a lowercase transformation and usage of custom vocabulary to make representations independent
     doc_tfidf=StemmedTfidfVectorizer(lowercase=True, stop_words=None, token_pattern=r'\w+', norm="l2")
@@ -27,19 +27,21 @@ def compute_sparse_repr(corpus: pd.DataFrame):
     #Computation of the sparse embedding
     sparse_doc=doc_tfidf.fit_transform(corpus)
     vocab=doc_tfidf.vocabulary_
+    idf=doc_tfidf.idf_
     
-    return sparse_doc, vocab
+    return sparse_doc, vocab, idf
 
 
-def compute_cosine_similarity(sparse_repr: scipy.sparse.spmatrix | np.ndarray, ids: pd.DataFrame, threshold: float):
+def compute_cosine_similarity(sparse_repr: scipy.sparse.spmatrix | np.ndarray, ids: pd.DataFrame, threshold: float, debug:bool=False):
     """
     Compute the pairwise cosine similarity of elems in a vector.
     Return pairs in increasing order that are >=`threshold` and the num of pairs
     """
-    #Compute the pairwise similarity
+    #Compute the pairwise similarity (they are normalized so it's only the dot product)
     cosine_scores_matr=np.round(sparse_repr.dot(sparse_repr.transpose()).toarray(), 4)
     
-    #print(cosine_scores_matr)
+    if debug:
+        print(cosine_scores_matr)
     res_list=[]
     #Get all the unique pairs where (a,b)==(b,a) in increasing order. Also don't consider similarity with itself
     for i in range(cosine_scores_matr.shape[0]):
