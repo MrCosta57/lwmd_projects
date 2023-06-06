@@ -39,6 +39,7 @@ def compute_cosine_similarity(sparse_repr: scipy.sparse.spmatrix | np.ndarray, i
     """
     #Compute the pairwise similarity (they are normalized so it's only the dot product)
     cosine_scores_matr=np.round(sparse_repr.dot(sparse_repr.transpose()).toarray(), 4)
+    ids=ids.reset_index(drop=True)
     
     if debug:
         print(cosine_scores_matr)

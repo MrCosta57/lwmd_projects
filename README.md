@@ -1,8 +1,10 @@
 # Requirements:
 - pandas
+- numpy
+- scipy
+- scikit-learn
 - nltk (in particular run also `nltk.download(['words', 'stopwords', 'punkt'])`)
 - matplotlib
-- scikit-learn
 - pyspark
 
 

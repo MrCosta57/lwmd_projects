@@ -163,3 +163,4 @@ datasets/*
 !datasets/.gitkeep
 results/*
 !results/.gitkeep
+*.png
